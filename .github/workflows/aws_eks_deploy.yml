@@ -66,6 +66,8 @@ jobs:
             echo "Pushing image to ECR..."
             docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
             echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+            echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_ENV
+
 
       - name: Install and configure kubectl
         run: |
@@ -94,7 +96,7 @@ jobs:
             echo "Deploying image $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG to EKS..."
 
             kubectl create namespace spring-mysql --dry-run=client -o yaml | kubectl apply -f -
-            sed -i "s|dkr.ecr.ap-south-1.amazonaws.com/dev-marketing:latest|$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG|g" deployment.yml
+            sed -i "s|dkr.ecr.ap-south-1.amazonaws.com/dev-marketing:latest|$image|g" deployment.yml
             kubectl apply -f deployment.yml
             kubectl apply -f db.yml
             echo "Waiting for deployments to be ready..."
