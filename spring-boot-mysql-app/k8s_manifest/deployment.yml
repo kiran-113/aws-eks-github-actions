@@ -70,19 +70,21 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: application-svc
   namespace: spring-mysql
-  labels:
-    app: application
+  name: application-svc
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: alb
+    service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
 spec:
-  type: LoadBalancer
   selector:
-    app: application
+    matchLabels:
+      app: application
+
+  type: LoadBalancer
   ports:
-    - name: http
-      port: 80
+    - port: 80
       targetPort: 8080
-      nodePort: 30090
+
 
 ---
 # -----------------------------
