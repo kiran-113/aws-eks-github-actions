@@ -70,20 +70,38 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  namespace: spring-mysql
   name: application-svc
-  annotations:
-    service.beta.kubernetes.io/aws-load-balancer-type: alb
-    service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
+  namespace: spring-mysql
 spec:
   selector:
-    matchLabels:
-      app: application
-
-  type: LoadBalancer
+    app: application   # must match your Deployment’s pod labels
   ports:
     - port: 80
       targetPort: 8080
+  type: NodePort
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: application-ingress
+  namespace: spring-mysql
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: application-svc
+                port:
+                  number: 80
 
 
 ---
